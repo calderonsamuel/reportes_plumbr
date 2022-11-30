@@ -63,25 +63,18 @@ function(a, b){
 #* @get /pdf
 function() {
   tmpdir <- tempdir()
-  tmp_qmd <- tempfile(tmpdir = tmpdir, fileext = ".qmd")
+  tmp_qmd <- tempfile(tmpdir = tmpdir, fileext = ".rmd")
   
   # tmp_qmd <- "inst/templates/test2.rmd"
   # tmp_pdf <- paste0(ids::random_id(), ".html")
   
   file.copy(from = "inst/templates/test2.rmd",to = tmp_qmd)
-  rmarkdown::render(tmp_qmd, output_format = rmarkdown::html_document())
+  rmarkdown::render(tmp_qmd)
   
-  tmp_pdf <- tools::file_path_sans_ext(tmp_qmd) |> paste0(".html")
+  tmp_outfile <- tools::file_path_sans_ext(tmp_qmd) |> paste0(".html")
   
-  message("temp_pdf is ", tmp_pdf)
+  message("temp_outfile is ", tmp_outfile)
 
-  readBin(tmp_pdf, "raw", n=file.info(tmp_pdf)$size)
+  readBin(tmp_outfile, "raw", n=file.info(tmp_outfile)$size)
 }
 
-
-#' @get /data
-#' @serializer csv
-function() {
-  # will cause the file to be saved as `iris.csv`, not `data` or `data.csv`
-  as_attachment(iris, "iris.csv")
-}
