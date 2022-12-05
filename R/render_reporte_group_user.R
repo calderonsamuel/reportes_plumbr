@@ -2,12 +2,11 @@ render_reporte_group_user <- function(user_data,
                                       tasks_data, 
                                       date_min = Sys.Date() - 15,
                                       date_max = Sys.Date(),
-                                      output_file = NULL) {
+                                      input = "inst/templates/reporte_group_user/template.rmd") {
   
   rmarkdown::render(
-    input = "inst/templates/reporte_group_user/template.rmd", 
-    output_file = output_file, 
-    # quiet = TRUE,
+    input = input, 
+    quiet = TRUE,
     params = list(
       user_data = user_data,
       tasks_data = tasks_data,
@@ -15,6 +14,10 @@ render_reporte_group_user <- function(user_data,
       date_max = as.character(date_max)
     )
   )
+  
+  rendered_file <- input |> tools::file_path_sans_ext() |> paste0(".html")
+  
+  if(rstudioapi::isAvailable()) rstudioapi::viewer(rendered_file)
 }
 
 reporte_group_user_data <- function(date_max = Sys.Date(), 
