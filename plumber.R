@@ -12,8 +12,6 @@
 
 library(plumber)
 
-db <- reportesAPI::DBManager$new()
-
 #* @apiTitle Reportes API
 
 
