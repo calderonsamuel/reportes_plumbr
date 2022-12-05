@@ -48,12 +48,13 @@ reporte_group_user_data <- function(date_max = Sys.Date(),
   )
 }
 
-create_reporte_group_user <- function(date_max = Sys.Date(), 
+create_reporte_group_user <- function(input = "inst/templates/reporte_group_user/template.rmd",
+                                      date_max = Sys.Date(), 
                                       date_min = Sys.Date() - 15, 
                                       group_id = Sys.getenv("TAREAS_GROUP_ID"), 
                                       user_id = Sys.getenv("TAREAS_USER_ID")) {
   
   data <- reporte_group_user_data(date_max, date_min, group_id, user_id)
   
-  render_reporte_group_user(data$user, data$tasks)
+  render_reporte_group_user(data$user, data$tasks, input = input)
 }

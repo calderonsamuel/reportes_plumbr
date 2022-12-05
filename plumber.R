@@ -35,18 +35,16 @@ function(a, b){
 
 #* Return a pdf
 #* @serializer html
-#* @get /pdf
+#* @get /reporte
 function() {
   tmpdir <- tempdir()
-  tmp_qmd <- tempfile(tmpdir = tmpdir, fileext = ".rmd")
+  R.utils::copyDirectory("inst/templates/reporte_group_user", tmpdir)
   
-  # tmp_qmd <- "inst/templates/test2.rmd"
-  # tmp_pdf <- paste0(ids::random_id(), ".html")
+  tmp_input_file <- file.path(tmpdir, "template.rmd")
   
-  file.copy(from = "inst/templates/test2.rmd",to = tmp_qmd)
-  rmarkdown::render(tmp_qmd)
+  create_reporte_group_user(input = tmp_input_file)
   
-  tmp_outfile <- tools::file_path_sans_ext(tmp_qmd) |> paste0(".html")
+  tmp_outfile <- tools::file_path_sans_ext(tmp_input_file) |> paste0(".html")
   
   message("temp_outfile is ", tmp_outfile)
 
