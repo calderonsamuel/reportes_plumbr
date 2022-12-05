@@ -2,8 +2,11 @@
 title: "Reporte de tareas de usuario"
 params:
   date_max: "2022-11-25"
+  date_min: "2022-11-01"
   group_id: TAREAS_GROUP_ID
   user_id: TAREAS_USER_ID
+  user_data: LIST
+  tasks_data: LIST
 output: 
   pagedown::html_paged:
     css:
@@ -16,24 +19,18 @@ output:
 knitr::opts_chunk$set(
 	echo = FALSE,
 	message = FALSE,
-	warning = FALSE
+	warning = FALSE, 
+	fig.width = 8,
+	fig.height = 4,
+	fig.align = "center"
 )
 ```
 
 
 ```{r}
-date_max <- as.Date(params$date_max)
-date_min <- date_max - 15
-group_id <- if (params$group_id == "TAREAS_GROUP_ID") Sys.getenv("TAREAS_GROUP_ID") else params$group_id
-user_id <- if (params$user_id == "TAREAS_USER_ID") Sys.getenv("TAREAS_USER_ID") else params$user_id
-```
-
-```{r}
 library(tidyverse)
 library(reportesAPI)
 library(glue)
-
-db <- DBManager$new()
 
 source("reporte_functions.R")
   
@@ -41,7 +38,8 @@ theme_set(theme_reporte())
 ```
 
 ```{r}
-user <- db$db_get_query("SELECT * FROM users WHERE user_id = {user_id}")
+# user <- db$db_get_query("SELECT * FROM users WHERE user_id = {user_id}", user_id = user_id)
+user <- params$user_data
 ```
 
 |                          |                                                                               |
@@ -56,12 +54,13 @@ progress_levels <- c("Pendiente", "En proceso", "Pausado",
 ```
 
 ```{r}
-tasks_period <- get_tasks_period(db, group_id, user_id, date_min, date_max)
+# tasks_period <- get_tasks_period(db, group_id, user_id, date_min, date_max)
+tasks_period <- params$tasks_data
 ```
 
 # Tareas
 
-## Productos de tareas terminadas en el periodo
+La siguiente tabla cuenta todas las tareas que fueron marcadas como terminadas por el responsable de equipo
 
 ```{r}
 tasks_period |> 
@@ -71,10 +70,10 @@ tasks_period |>
     `Unidad de medida` = output_unit,
     Cantidad = n
   ) |> 
-  reporte_flextable()
+  reporte_gt(caption = "Productos de tareas terminadas en el periodo") 
 ```
 
-## Productos de tareas no terminadas en el periodo
+La siguiente tabla cuenta todas las tareas en las que se reportó un avance durante el periodo, que no han sido reportadas como terminadas por el responsable de equipo. 
 
 ```{r}
 tasks_period |> 
@@ -84,14 +83,15 @@ tasks_period |>
     `Unidad de medida` = output_unit,
     Cantidad = n
   ) |> 
-  reporte_flextable()
+  reporte_gt(caption = "Productos de tareas no terminadas en el periodo") 
 ```
+
 
 \pagebreak
 
-## Estado de las tareas con última modificación en el periodo
+Una descripción de gráfico
 
-```{r}
+```{r, fig.cap="Estado de las tareas con última modificación en el periodo"}
 tasks_period |> 
   mutate(status_current = factor(status_current, levels = progress_levels)) |> 
   count(status_current) |> 
@@ -104,9 +104,9 @@ tasks_period |>
   ) 
 ```
 
-## Tareas agregadas por fecha
+Una descripción de gráfico
 
-```{r}
+```{r, fig.cap="Tareas agregadas por fecha"}
 tasks_period |> 
   mutate(date = as.Date(time_creation)) |> 
   count(date) |> 
@@ -124,8 +124,4 @@ tasks_period |>
     axis.ticks.x = element_line(),
     axis.text.x = element_text(angle = 45, hjust = 1)
   )
-```
-
-```{r}
-rm(db)
 ```

@@ -1,20 +1,8 @@
-reporte_gt <- function(dat, 
-                       caption = NULL, 
-                       source_note = "Fuente: Datos reportados en el aplicativo",
-                       width = "80%") {
-  
-  tbl <- gt::gt(dat) |> 
-    gt::tab_options(table.width = width)
-  
-  if (!is.null(caption)) {
-    tbl <- gt::tab_caption(tbl, caption)
-  }
-  
-  if (!is.null(source_note)) {
-    tbl <- gt::tab_source_note(tbl, source_note)
-  }
-  
-  tbl
+reporte_flextable <- function(dat) {
+  flextable::flextable(dat) |> 
+    flextable::set_table_properties("autofit") |> 
+    flextable::font(part = "all", fontname = "Calibri") |> 
+    flextable::fontsize(size = 10, part = "all")
 }
 
 theme_reporte <- function() {
@@ -36,7 +24,5 @@ get_tasks_period <- function(AppData, group_id, user_id, date_min, date_max) {
       time_last_modified <= {date_max + 1}
     ", 
     group_id = group_id,
-    user_id = user_id,
-    date_min = date_min,
-    date_max = date_max)
+    user_id = user_id)
 }
