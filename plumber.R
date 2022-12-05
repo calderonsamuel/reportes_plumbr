@@ -12,14 +12,10 @@
 
 library(plumber)
 
-#* @apiTitle Plumber Example API
+db <- reportesAPI::DBManager$new()
 
-#* Echo back the input
-#* @param msg The message to echo
-#* @get /echo
-function(msg=""){
-  list(msg = paste0("The message is: '", msg, "'"))
-}
+#* @apiTitle Reportes API
+
 
 #* Plot a histogram
 #* @serializer png
@@ -27,27 +23,6 @@ function(msg=""){
 function(){
   rand <- rnorm(100)
   hist(rand)
-}
-
-#* Plot a histogram
-#* @serializer pdf
-#* @get /plot2
-function(){
-  plot <- data.frame(x = rnorm(100)) |>
-    ggplot2::ggplot(ggplot2::aes(x)) +
-    ggplot2::geom_histogram()
-  
-  print(plot)
-  # 
-  # tmp_pdf <- tempfile(fileext = ".pdf")
-  # 
-  # ggplot2::ggsave(tmp_pdf, plot)
-  # 
-  # # tmp_pdf
-  
-  # readBin(tmp_pdf, "raw", n=file.info(tmp_pdf)$size)
-  
-  # htmltools::tags$h5("HTML text")
 }
 
 #* Return the sum of two numbers
@@ -76,5 +51,13 @@ function() {
   message("temp_outfile is ", tmp_outfile)
 
   readBin(tmp_outfile, "raw", n=file.info(tmp_outfile)$size)
+}
+
+
+#* Return user data
+#* @param id The user id
+#* @get /user
+function(id) {
+  db$db_get_query("SELECT * FROM users WHERE user_id = {id}", id = id)
 }
 

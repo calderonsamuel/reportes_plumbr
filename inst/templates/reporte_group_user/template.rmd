@@ -1,0 +1,131 @@
+---
+title: "Reporte de tareas de usuario"
+params:
+  date_max: "2022-11-25"
+  group_id: TAREAS_GROUP_ID
+  user_id: TAREAS_USER_ID
+output: 
+  pagedown::html_paged:
+    css:
+      - custom-fonts.css
+      - custom-page.css
+      - custom-default.css
+---
+
+```{r setup,include=FALSE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+
+```{r}
+date_max <- as.Date(params$date_max)
+date_min <- date_max - 15
+group_id <- if (params$group_id == "TAREAS_GROUP_ID") Sys.getenv("TAREAS_GROUP_ID") else params$group_id
+user_id <- if (params$user_id == "TAREAS_USER_ID") Sys.getenv("TAREAS_USER_ID") else params$user_id
+```
+
+```{r}
+library(tidyverse)
+library(reportesAPI)
+library(glue)
+
+db <- DBManager$new()
+
+source("reporte_functions.R")
+  
+theme_set(theme_reporte())
+```
+
+```{r}
+user <- db$db_get_query("SELECT * FROM users WHERE user_id = {user_id}")
+```
+
+|                          |                                                                               |
+|-------------------|-----------------------------------------------------|
+| **Nombres**:             | `r user$name`                                                                 |
+| **Apellidos**:           | `r user$last_name`                                                            |
+| **Periodo del reporte**: | Desde `r format(date_min, "%d/%m/%Y")` hasta `r format(date_max, "%d/%m/%Y")` |
+
+```{r}
+progress_levels <- c("Pendiente", "En proceso", "Pausado", 
+                     "En revisión", "Observado", "Terminado")
+```
+
+```{r}
+tasks_period <- get_tasks_period(db, group_id, user_id, date_min, date_max)
+```
+
+# Tareas
+
+## Productos de tareas terminadas en el periodo
+
+```{r}
+tasks_period |> 
+  filter(status_current == "Terminado") |> 
+  count(output_unit, wt = output_current) |> 
+  rename(
+    `Unidad de medida` = output_unit,
+    Cantidad = n
+  ) |> 
+  reporte_flextable()
+```
+
+## Productos de tareas no terminadas en el periodo
+
+```{r}
+tasks_period |> 
+  filter(status_current != "Terminado") |> 
+  count(output_unit, wt = output_current) |> 
+  rename(
+    `Unidad de medida` = output_unit,
+    Cantidad = n
+  ) |> 
+  reporte_flextable()
+```
+
+\pagebreak
+
+## Estado de las tareas con última modificación en el periodo
+
+```{r}
+tasks_period |> 
+  mutate(status_current = factor(status_current, levels = progress_levels)) |> 
+  count(status_current) |> 
+  ggplot(aes(status_current, n)) +
+  geom_col() +
+  scale_y_continuous(minor_breaks = \(num) seq_len(max(num))) +
+  labs(
+    x = "Estado",
+    y = "N° de tareas"
+  ) 
+```
+
+## Tareas agregadas por fecha
+
+```{r}
+tasks_period |> 
+  mutate(date = as.Date(time_creation)) |> 
+  count(date) |> 
+  complete(date = seq(date_min, date_max, by = 1)) |> 
+  replace_na(list(n = 0)) |> 
+  ggplot(aes(date, n)) +
+  geom_line() +
+  scale_y_continuous(minor_breaks = \(num) seq_len(max(num))) +
+  scale_x_date(date_breaks = "1 day", date_labels = "%a %d/%m") +
+  labs(
+    x = "Fecha",
+    y = "N° de tareas"
+  ) +
+  theme(
+    axis.ticks.x = element_line(),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+```{r}
+rm(db)
+```
