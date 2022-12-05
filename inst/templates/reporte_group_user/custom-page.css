@@ -1,6 +1,6 @@
 /* page size */
 @page {
-  size: 6in 9in; /* var(--pagedjs-width) doesn't work in browser when printing */
+  size: A4; /* var(--pagedjs-width) doesn't work in browser when printing */
 }
 @page :blank {
 
@@ -141,7 +141,7 @@
 
 /* page breaks; aka CSS fragmentation */
 .level1 {
-  break-before: recto;
+  break-before: page;
   page: chapter;
 }
 .front-matter-container .level1 {
