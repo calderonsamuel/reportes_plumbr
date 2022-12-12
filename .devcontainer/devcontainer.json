@@ -5,13 +5,13 @@
 		"ghcr.io/devcontainers/features/node:1": {
 			"version": "lts"
 		}
-	}
+	},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "R --version",
+	"postCreateCommand": "sudo R -e 'renv::restore()'"
 
 	// Configure tool-specific properties.
 	// "customizations": {},
