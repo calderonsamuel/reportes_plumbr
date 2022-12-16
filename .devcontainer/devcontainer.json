@@ -11,7 +11,7 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "sudo R -e 'renv::restore()'"
+	// "postCreateCommand": "sudo R -e 'renv::restore()'"
 
 	// Configure tool-specific properties.
 	// "customizations": {},
